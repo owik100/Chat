@@ -8,18 +8,60 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+using System.Net.Sockets;
+using System.Net;
+
 namespace ChatServer
 {
     public partial class Form1 : Form
     {
+        TcpListener server;
+        TcpClient client;
+
+        private delegate void SetLogDelegate(string text);
+
         public Form1()
         {
             InitializeComponent();
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private void buttonStart_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                listBoxOutput.Items.Clear();
+
+                IPAddress ipAdress = IPAddress.Parse(textBoxAdress.Text);
+                int port = Convert.ToInt32(numericUpDownPort.Value);
+
+                server = new TcpListener(ipAdress, port);
+                server.Start();
+                listBoxOutput.Items.Add($"Server nasłuchuje...");
+
+                server.BeginAcceptTcpClient(new AsyncCallback(WaitForConnection), server);
+
+            }
+            catch (Exception ex)
+            {
+
+                MessageBox.Show(ex.ToString());
+            }
+        }
+
+        void WaitForConnection(IAsyncResult asyncResult)
         {
 
+            client = server.EndAcceptTcpClient(asyncResult);
+            string clientIP = client.Client.RemoteEndPoint.ToString();
+            Invoke(new SetLogDelegate(SetLogText), $"Klient połączony! - {clientIP}");
+
+            client.Close();
+            server.Stop();
+        }
+
+        private void SetLogText(string strText)
+        {
+            listBoxOutput.Items.Add(strText);
         }
     }
 }
