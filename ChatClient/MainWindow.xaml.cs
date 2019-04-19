@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -23,6 +25,13 @@ namespace ChatClient
         public MainWindow()
         {
             InitializeComponent();
+
+            TcpClient client = new TcpClient();
+            client.Connect("127.0.0.1", 3000);
+            BinaryReader reader = new BinaryReader(client.GetStream());
+            string x = reader.ReadString();
+
+            listBoxOutput.Items.Add(x);
         }
     }
 }

@@ -10,6 +10,7 @@ using System.Windows.Forms;
 
 using System.Net.Sockets;
 using System.Net;
+using System.IO;
 
 namespace ChatServer
 {
@@ -55,8 +56,13 @@ namespace ChatServer
             string clientIP = client.Client.RemoteEndPoint.ToString();
             Invoke(new SetLogDelegate(SetLogText), $"Klient połączony! - {clientIP}");
 
-            client.Close();
-            server.Stop();
+            BinaryWriter writer = new BinaryWriter(client.GetStream());
+
+            writer.Write($"{DateTime.Now} - Wysłano dane z serwera!");
+
+
+            // client.Close();
+            // server.Stop();
         }
 
         private void SetLogText(string strText)
