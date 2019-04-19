@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,16 +23,56 @@ namespace ChatClient
     /// </summary>
     public partial class MainWindow : Window
     {
+        TcpClient client;
+
         public MainWindow()
         {
             InitializeComponent();
 
-            TcpClient client = new TcpClient();
-            client.Connect("127.0.0.1", 3000);
-            BinaryReader reader = new BinaryReader(client.GetStream());
-            string x = reader.ReadString();
+           
+        }
 
-            listBoxOutput.Items.Add(x);
+        private void buttonConnect_Click(object sender, RoutedEventArgs e)
+        {
+
+          
+            try
+            {
+                client = new TcpClient();
+
+                (sender as Button).IsEnabled = false;
+                buttonDisconnect.IsEnabled = true;
+                listBoxOutput.Items.Clear();
+
+                IPAddress ipAdress = IPAddress.Parse(textBoxIpAddress.Text);
+                int port = Convert.ToInt32(textBoxPort.Text);
+                client.Connect(ipAdress, port);
+
+                BinaryReader reader = new BinaryReader(client.GetStream());
+                string x = reader.ReadString();
+
+                listBoxOutput.Items.Add(x);
+
+            }
+            catch (Exception ex)
+            {
+
+                MessageBox.Show(ex.ToString());
+            }
+
+        }
+
+        private void buttonDisconnect_Click(object sender, RoutedEventArgs e)
+        {
+            if (client != null)
+            {
+                client.Close();
+            }
+
+            (sender as Button).IsEnabled = false;
+            buttonConnect.IsEnabled = true;
+
+            listBoxOutput.Items.Add("Serwer wyłączony");
         }
     }
 }

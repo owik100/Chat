@@ -30,6 +30,8 @@ namespace ChatServer
         {
             try
             {
+                (sender as Button).Enabled = false;
+                buttonStop.Enabled = true;
                 listBoxOutput.Items.Clear();
 
                 IPAddress ipAdress = IPAddress.Parse(textBoxAdress.Text);
@@ -51,23 +53,46 @@ namespace ChatServer
 
         void WaitForConnection(IAsyncResult asyncResult)
         {
+            if (!server.Server.IsBound || server.Server == null)
+                return;
 
-            client = server.EndAcceptTcpClient(asyncResult);
-            string clientIP = client.Client.RemoteEndPoint.ToString();
-            Invoke(new SetLogDelegate(SetLogText), $"Klient połączony! - {clientIP}");
+            try
+            {
+                client = server.EndAcceptTcpClient(asyncResult);
+                string clientIP = client.Client.RemoteEndPoint.ToString();
+                Invoke(new SetLogDelegate(SetLogText), $"Klient połączony! - {clientIP}");
 
-            BinaryWriter writer = new BinaryWriter(client.GetStream());
+                BinaryWriter writer = new BinaryWriter(client.GetStream());
 
-            writer.Write($"{DateTime.Now} - Wysłano dane z serwera!");
+                writer.Write($"{DateTime.Now} - Wysłano dane z serwera!");
+            }
+            catch (ObjectDisposedException)
+            {
+                return;
+            }
+          
 
-
-            // client.Close();
-            // server.Stop();
         }
 
         private void SetLogText(string strText)
         {
             listBoxOutput.Items.Add(strText);
+        }
+
+        private void buttonStop_Click(object sender, EventArgs e)
+        {
+            if (client!=null)
+            {
+                client.Close();              
+            }
+
+            server.Stop();
+
+           
+            (sender as Button).Enabled = false;
+            buttonStart.Enabled = true;
+
+            Invoke(new SetLogDelegate(SetLogText), "Serwer wyłączony");
         }
     }
 }
