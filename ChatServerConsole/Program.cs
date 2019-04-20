@@ -40,8 +40,17 @@ namespace ChatServerConsole
             _clientsList.Add(socket);
             Console.WriteLine($"[{_clientsList.Count }] Klient połączony! , Adres : {socket.RemoteEndPoint} ");
 
+            byte[] message = Encoding.ASCII.GetBytes("Wiadomość z serwera!");
+            socket.BeginSend(message, 0, message.Length, SocketFlags.None, new AsyncCallback(SendCallback), socket);
+
             socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(ReciveCallback), socket);
            _server.BeginAccept(AcceptConnection, null);
+        }
+
+        private static void SendCallback(IAsyncResult asyncResult)
+        {
+            Socket socket = asyncResult.AsyncState as Socket;
+            socket.EndSend(asyncResult);
         }
 
         private static void ReciveCallback(IAsyncResult asyncResult)
@@ -53,7 +62,6 @@ namespace ChatServerConsole
 
             string text = Encoding.ASCII.GetString(dataBuf);
             Console.WriteLine($"Otrzymana wiadomość: {text}");
-
             socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(ReciveCallback), socket);
         }
     }

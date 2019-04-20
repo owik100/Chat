@@ -48,10 +48,12 @@ namespace ChatClient
                 int port = Convert.ToInt32(textBoxPort.Text);
                 client.Connect(ipAdress, port);
 
-                BinaryReader reader = new BinaryReader(client.GetStream());
-                string x = reader.ReadString();
+                //BinaryReader reader = new BinaryReader(client.GetStream());
+                //string x = reader.ReadString();
 
-                listBoxOutput.Items.Add(x);
+                if(client.Connected)
+
+                listBoxOutput.Items.Add("Connected");
 
             }
             catch (Exception ex)
@@ -73,6 +75,22 @@ namespace ChatClient
             buttonConnect.IsEnabled = true;
 
             listBoxOutput.Items.Add("Serwer wyłączony");
+        }
+
+        private void buttonSend_Click(object sender, RoutedEventArgs e)
+        {
+            string message = textBoxInput.Text;
+
+            try
+            {
+                byte[] buffer = Encoding.ASCII.GetBytes(message);
+                client.Client.Send(buffer);
+            }
+            catch (Exception ex)
+            {
+
+                MessageBox.Show(ex.ToString());
+            }
         }
     }
 }
