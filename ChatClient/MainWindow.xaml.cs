@@ -55,6 +55,13 @@ namespace ChatClient
 
                 listBoxOutput.Items.Add("Connected");
 
+                byte[] receivedBuf = new byte[512];
+                int rec = client.Client.Receive(receivedBuf);
+                byte[] data = new byte[rec];
+                Array.Copy(receivedBuf, data, rec);
+
+                listBoxOutput.Items.Add(Encoding.UTF8.GetString(data));
+
             }
             catch (Exception ex)
             {
