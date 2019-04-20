@@ -10,8 +10,10 @@ namespace ChatServerConsole
 {
     class Program
     {
-        static TcpListener _server;
-        static List<TcpClient> _clientsList = new List<TcpClient>();
+        static Socket _server;
+        static List<Socket> _clientsList = new List<Socket>();
+
+        static byte[] _buffer = new byte[512];
 
         static void Main(string[] args)
         {
@@ -25,19 +27,34 @@ namespace ChatServerConsole
             int port = 3000;
 
             Console.WriteLine("Uruchamianie serwera...");
-            _server = new TcpListener(ipAdress, port);
-            _server.Start();
-            _server.BeginAcceptTcpClient(new AsyncCallback(WaitForConnection), null);
+            _server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            _server.Bind(new IPEndPoint(ipAdress, port));
+            _server.Listen(3);
+            _server.BeginAccept(new AsyncCallback(AcceptConnection), null);
+            Console.WriteLine("Serwer nasłuchuje...");
         }
 
-        private static void WaitForConnection(IAsyncResult asyncCallback)
+        private static void AcceptConnection(IAsyncResult asyncCallback)
         {
-            TcpClient client = _server.EndAcceptTcpClient(asyncCallback);
-            _clientsList.Add(client);
+            Socket socket = _server.EndAccept(asyncCallback);
+            _clientsList.Add(socket);
+            Console.WriteLine($"[{_clientsList.Count }] Klient połączony! , Adres : {socket.RemoteEndPoint} ");
 
-            Console.WriteLine($"[{_clientsList.Count }] Klient połączony! , Adres : {client.Client.RemoteEndPoint} ");
+            socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(ReciveCallback), socket);
+           _server.BeginAccept(AcceptConnection, null);
+        }
 
-           _server.BeginAcceptSocket(WaitForConnection, null);
+        private static void ReciveCallback(IAsyncResult asyncResult)
+        {
+            Socket socket = asyncResult.AsyncState as Socket;
+            int recived = socket.EndReceive(asyncResult);
+            byte[] dataBuf = new byte[recived];
+            Array.Copy(_buffer, dataBuf, recived);
+
+            string text = Encoding.ASCII.GetString(dataBuf);
+            Console.WriteLine($"Otrzymana wiadomość: {text}");
+
+            socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(ReciveCallback), socket);
         }
     }
 }
