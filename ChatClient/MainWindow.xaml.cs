@@ -94,7 +94,7 @@ namespace ChatClient
             {
                 listBoxOutput.Items.Add(text);
             }));
-    
+            client.Client.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(Odbierz), client);
         }
 
         private void buttonDisconnect_Click(object sender, RoutedEventArgs e)
