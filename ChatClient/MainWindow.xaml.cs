@@ -24,6 +24,7 @@ namespace ChatClient
     public partial class MainWindow : Window
     {
         TcpClient client;
+        static byte[] _buffer = new byte[512];
 
         public MainWindow()
         {
@@ -62,6 +63,8 @@ namespace ChatClient
 
                 listBoxOutput.Items.Add(Encoding.UTF8.GetString(data));
 
+                client.Client.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(Odbierz),client);
+
             }
             catch (Exception ex)
             {
@@ -69,6 +72,29 @@ namespace ChatClient
                 MessageBox.Show(ex.ToString());
             }
 
+        }
+
+        void Odbierz(IAsyncResult asyncResult)
+        {
+            //Socket socket = asyncResult.AsyncState as Socket;
+            //int recived = socket.EndReceive(asyncResult);
+            //byte[] dataBuf = new byte[recived];
+            //Array.Copy(_buffer, dataBuf, recived);
+
+            //string text = Encoding.UTF8.GetString(dataBuf);
+
+            TcpClient client = asyncResult.AsyncState as TcpClient;
+            int recived = client.Client .EndReceive(asyncResult);
+            byte[] dataBuf = new byte[recived];
+            Array.Copy(_buffer, dataBuf, recived);
+
+            string text = Encoding.UTF8.GetString(dataBuf);
+
+            this.Dispatcher.Invoke((Action)(() =>
+            {
+                listBoxOutput.Items.Add(text);
+            }));
+    
         }
 
         private void buttonDisconnect_Click(object sender, RoutedEventArgs e)
@@ -90,7 +116,7 @@ namespace ChatClient
 
             try
             {
-                byte[] buffer = Encoding.ASCII.GetBytes(message);
+                byte[] buffer = Encoding.UTF8.GetBytes(message);
                 client.Client.Send(buffer);
             }
             catch (Exception ex)

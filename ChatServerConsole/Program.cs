@@ -41,7 +41,7 @@ namespace ChatServerConsole
             Console.WriteLine($"[{_clientsList.Count }] Klient połączony! , Adres : {socket.RemoteEndPoint} ");
 
             byte[] message = Encoding.UTF8.GetBytes("Wiadomość z serwera!");
-            socket.Send(message);
+            socket.BeginSend(message,0, message.Length,SocketFlags.None, new AsyncCallback(SendCallback),socket);
 
             socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(ReciveCallback), socket);
            _server.BeginAccept(AcceptConnection, null);
@@ -60,8 +60,14 @@ namespace ChatServerConsole
             byte[] dataBuf = new byte[recived];
             Array.Copy(_buffer, dataBuf, recived);
 
-            string text = Encoding.ASCII.GetString(dataBuf);
+            string text = Encoding.UTF8.GetString(dataBuf);
             Console.WriteLine($"Otrzymana wiadomość: {text}");
+
+            foreach (var item in _clientsList)
+            {
+                item.Send(dataBuf);
+            }
+
             socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(ReciveCallback), socket);
         }
     }
