@@ -14,22 +14,33 @@ namespace ChatServerConsole
         static List<Socket> _clientsList = new List<Socket>();
 
         static byte[] _buffer = new byte[512];
-        static string serwerName = "Serwer testowy";
+        static string _serwerName = "Serwer testowy";
+        static IPAddress _ipAdress = IPAddress.Parse("127.0.0.1");
+        static int _port = 3000;
 
         static void Main(string[] args)
         {
+            LoadSettings();
             SetupServer();
+
             Console.ReadLine();
+        }
+
+        private static void LoadSettings()
+        {
+            SettingsModel settingsModel = SettingsAccess.ReadData();
+
+            _serwerName = settingsModel.SerwerName;
+            _ipAdress = IPAddress.Parse(settingsModel.IpAdress);
+            _port = settingsModel.Port;
+            _buffer = new byte[settingsModel.BufferSize];
         }
 
         private static void SetupServer()
         {
-            IPAddress ipAdress = IPAddress.Parse("127.0.0.1");
-            int port = 3000;
-
             Console.WriteLine("Uruchamianie serwera...");
             _server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            _server.Bind(new IPEndPoint(ipAdress, port));
+            _server.Bind(new IPEndPoint(_ipAdress, _port));
             _server.Listen(3);
             _server.BeginAccept(new AsyncCallback(AcceptConnection), null);
             Console.WriteLine("Serwer nasłuchuje...");
@@ -41,7 +52,7 @@ namespace ChatServerConsole
             _clientsList.Add(socket);
             Console.WriteLine($"[{_clientsList.Count }] Klient połączony! , Adres : {socket.RemoteEndPoint} ");
 
-            byte[] message = Encoding.UTF8.GetBytes($"Jesteś połączony z serwerem {serwerName}");
+            byte[] message = Encoding.UTF8.GetBytes($"Jesteś połączony z serwerem {_serwerName}");
             socket.BeginSend(message, 0, message.Length, SocketFlags.None, new AsyncCallback(SendCallback), socket);
 
             socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(ReciveCallback), socket);
