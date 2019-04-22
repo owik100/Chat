@@ -14,6 +14,7 @@ namespace ChatServerConsole
         static List<Socket> _clientsList = new List<Socket>();
 
         static byte[] _buffer = new byte[512];
+        static string serwerName = "Serwer testowy";
 
         static void Main(string[] args)
         {
@@ -40,11 +41,11 @@ namespace ChatServerConsole
             _clientsList.Add(socket);
             Console.WriteLine($"[{_clientsList.Count }] Klient połączony! , Adres : {socket.RemoteEndPoint} ");
 
-            byte[] message = Encoding.UTF8.GetBytes("Wiadomość z serwera!");
-            socket.BeginSend(message,0, message.Length,SocketFlags.None, new AsyncCallback(SendCallback),socket);
+            byte[] message = Encoding.UTF8.GetBytes($"Jesteś połączony z serwerem {serwerName}");
+            socket.BeginSend(message, 0, message.Length, SocketFlags.None, new AsyncCallback(SendCallback), socket);
 
             socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(ReciveCallback), socket);
-           _server.BeginAccept(AcceptConnection, null);
+            _server.BeginAccept(AcceptConnection, null);
         }
 
         private static void SendCallback(IAsyncResult asyncResult)
@@ -56,19 +57,29 @@ namespace ChatServerConsole
         private static void ReciveCallback(IAsyncResult asyncResult)
         {
             Socket socket = asyncResult.AsyncState as Socket;
-            int recived = socket.EndReceive(asyncResult);
-            byte[] dataBuf = new byte[recived];
-            Array.Copy(_buffer, dataBuf, recived);
-
-            string text = Encoding.UTF8.GetString(dataBuf);
-            Console.WriteLine($"Otrzymana wiadomość: {text}");
-
-            foreach (var item in _clientsList)
+            try
             {
-                item.Send(dataBuf);
+                int recived = socket.EndReceive(asyncResult);
+                byte[] dataBuf = new byte[recived];
+                Array.Copy(_buffer, dataBuf, recived);
+
+                string text = Encoding.UTF8.GetString(dataBuf);
+                Console.WriteLine($"Otrzymana wiadomość: {text}");
+
+                foreach (var item in _clientsList)
+                {
+                    item.Send(dataBuf);
+                }
+                socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(ReciveCallback), socket);
+            }
+            catch (Exception ex)
+            {
+                _clientsList.Remove(socket);
+                Console.WriteLine($"Klient rozłączony - {socket.RemoteEndPoint}");
+                socket.Close();
+                socket.Dispose();
             }
 
-            socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(ReciveCallback), socket);
         }
     }
 }
