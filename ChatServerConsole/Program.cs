@@ -13,10 +13,10 @@ namespace ChatServerConsole
         static Socket _server;
         static List<Socket> _clientsList = new List<Socket>();
 
-        static byte[] _buffer = new byte[512];
-        static string _serwerName = "Serwer testowy";
-        static IPAddress _ipAdress = IPAddress.Parse("127.0.0.1");
-        static int _port = 3000;
+        static byte[] _buffer;
+        static string _serverName;
+        static IPAddress _ipAdress;
+        static int _port;
 
         static void Main(string[] args)
         {
@@ -30,7 +30,7 @@ namespace ChatServerConsole
         {
             SettingsModel settingsModel = SettingsAccess.ReadData();
 
-            _serwerName = settingsModel.SerwerName;
+            _serverName = settingsModel.SerwerName;
             _ipAdress = IPAddress.Parse(settingsModel.IpAdress);
             _port = settingsModel.Port;
             _buffer = new byte[settingsModel.BufferSize];
@@ -38,6 +38,7 @@ namespace ChatServerConsole
 
         private static void SetupServer()
         {
+            Console.Title = _serverName;
             Console.WriteLine("Uruchamianie serwera...");
             _server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             _server.Bind(new IPEndPoint(_ipAdress, _port));
@@ -52,7 +53,7 @@ namespace ChatServerConsole
             _clientsList.Add(socket);
             Console.WriteLine($"[{_clientsList.Count }] Klient połączony! , Adres : {socket.RemoteEndPoint} ");
 
-            byte[] message = Encoding.UTF8.GetBytes($"Jesteś połączony z serwerem {_serwerName}");
+            byte[] message = Encoding.UTF8.GetBytes($"Jesteś połączony z serwerem {_serverName}");
             socket.BeginSend(message, 0, message.Length, SocketFlags.None, new AsyncCallback(SendCallback), socket);
 
             socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(ReciveCallback), socket);
