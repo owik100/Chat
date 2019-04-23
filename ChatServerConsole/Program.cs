@@ -43,7 +43,7 @@ namespace ChatServerConsole
             _server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             _server.Bind(new IPEndPoint(_ipAdress, _port));
             _server.Listen(3);
-            _server.BeginAccept(_server.ReceiveBufferSize,new AsyncCallback(AcceptConnection), null);
+            _server.BeginAccept(_server.ReceiveBufferSize,new AsyncCallback(AcceptConnection),null);
             Console.WriteLine("Serwer nasłuchuje...");
         }
 
@@ -60,7 +60,7 @@ namespace ChatServerConsole
             socket.BeginSend(message, 0, message.Length, SocketFlags.None, new AsyncCallback(SendCallback), socket);
 
             socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(ReciveCallback), socket);
-            _server.BeginAccept(AcceptConnection, null);
+            _server.BeginAccept(_server.ReceiveBufferSize, AcceptConnection, null);
         }
 
         private static void SendCallback(IAsyncResult asyncResult)
@@ -94,7 +94,8 @@ namespace ChatServerConsole
 
                 foreach (var item in _clientsList)
                 {
-                    item.Key.BeginSend(dataBuf, 0, dataBuf.Length, SocketFlags.None, new AsyncCallback(SendCallback), socket);
+                    //item.Key.BeginSend(dataBuf, 0, dataBuf.Length, SocketFlags.None, new AsyncCallback(SendCallback), socket);
+                    item.Key.Send(dataBuf);
                 }
                 socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(ReciveCallback), socket);
             }
