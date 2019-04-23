@@ -53,11 +53,19 @@ namespace ChatServerConsole
             Socket socket = _server.EndAccept(out buffer, asyncCallback);
             string userName = Encoding.UTF8.GetString(buffer);
 
-            _clientsList.Add(socket, userName);
+
             Console.WriteLine($"Klient połączony! Nick: {userName} , Adres: {socket.RemoteEndPoint}, połączonych łącznie [{_clientsList.Count }]");
 
             byte[] message = Encoding.UTF8.GetBytes($"Jesteś połączony z serwerem '{_serverName}'");
+            byte[] messageToAll = Encoding.UTF8.GetBytes($"{userName} połączony!");
+            foreach (var item in _clientsList)
+            {
+                item.Key.BeginSend(messageToAll, 0, messageToAll.Length, SocketFlags.None, new AsyncCallback(SendCallback), item.Key);
+            }
+
             socket.BeginSend(message, 0, message.Length, SocketFlags.None, new AsyncCallback(SendCallback), socket);
+
+            _clientsList.Add(socket, userName);
 
             socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(ReciveCallback), socket);
             _server.BeginAccept(_server.ReceiveBufferSize, AcceptConnection, null);
@@ -107,7 +115,14 @@ namespace ChatServerConsole
         private static void DisconnectClient(Socket socket)
         {
             Console.WriteLine($"Klient {_clientsList[socket]} rozłączony, pozostało połączonych [{_clientsList.Count - 1 }]");
+
+            byte[] message = Encoding.UTF8.GetBytes($"{_clientsList[socket]} rozłączony!");
             _clientsList.Remove(socket);
+            foreach (var item in _clientsList)
+            {
+                item.Key.BeginSend(message, 0, message.Length, SocketFlags.None, new AsyncCallback(SendCallback), item.Key);
+            }
+
             socket.Shutdown(SocketShutdown.Both);
             socket.Close();
             socket.Dispose();
