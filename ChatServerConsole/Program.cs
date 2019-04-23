@@ -49,20 +49,22 @@ namespace ChatServerConsole
 
         private static void AcceptConnection(IAsyncResult asyncCallback)
         {
+            //Pobranie nicku
             byte[] buffer = new byte[_server.ReceiveBufferSize];
             Socket socket = _server.EndAccept(out buffer, asyncCallback);
             string userName = Encoding.UTF8.GetString(buffer);
 
-
             Console.WriteLine($"Klient połączony! Nick: {userName} , Adres: {socket.RemoteEndPoint}, połączonych łącznie [{_clientsList.Count }]");
 
-            byte[] message = Encoding.UTF8.GetBytes($"Jesteś połączony z serwerem '{_serverName}'");
+            //Wysłanie inormacji o dołączeniu do wszystkich userów
             byte[] messageToAll = Encoding.UTF8.GetBytes($"{userName} połączony!");
             foreach (var item in _clientsList)
             {
                 item.Key.BeginSend(messageToAll, 0, messageToAll.Length, SocketFlags.None, new AsyncCallback(SendCallback), item.Key);
             }
 
+            //Wysłanie informacji do połączonego usera
+            byte[] message = Encoding.UTF8.GetBytes($"Jesteś połączony z serwerem '{_serverName}'");
             socket.BeginSend(message, 0, message.Length, SocketFlags.None, new AsyncCallback(SendCallback), socket);
 
             _clientsList.Add(socket, userName);
@@ -100,6 +102,7 @@ namespace ChatServerConsole
                 message = DateTime.Now.ToShortTimeString() + " " + _clientsList[socket] + ": " + message;
                 dataBuf = Encoding.UTF8.GetBytes(message);
 
+                //Prześlij otrzymaną wiadomość do wszystkich userów
                 foreach (var item in _clientsList)
                 {
                     item.Key.BeginSend(dataBuf, 0, dataBuf.Length, SocketFlags.None, new AsyncCallback(SendCallback), item.Key);
@@ -118,6 +121,8 @@ namespace ChatServerConsole
 
             byte[] message = Encoding.UTF8.GetBytes($"{_clientsList[socket]} rozłączony!");
             _clientsList.Remove(socket);
+
+            //Prześlij informacje o rozłączonym userze do wszystkich pozostałych
             foreach (var item in _clientsList)
             {
                 item.Key.BeginSend(message, 0, message.Length, SocketFlags.None, new AsyncCallback(SendCallback), item.Key);
