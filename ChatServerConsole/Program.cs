@@ -94,8 +94,7 @@ namespace ChatServerConsole
 
                 foreach (var item in _clientsList)
                 {
-                    //item.Key.BeginSend(dataBuf, 0, dataBuf.Length, SocketFlags.None, new AsyncCallback(SendCallback), socket);
-                    item.Key.Send(dataBuf);
+                    item.Key.BeginSend(dataBuf, 0, dataBuf.Length, SocketFlags.None, new AsyncCallback(SendCallback), item.Key);
                 }
                 socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(ReciveCallback), socket);
             }
