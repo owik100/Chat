@@ -11,7 +11,7 @@ namespace ChatServerConsole
     class Program
     {
         static Socket _server;
-        static List<Socket> _clientsList = new List<Socket>();
+        static Dictionary<Socket, string> _clientsList = new Dictionary<Socket, string>();
 
         static byte[] _buffer;
         static string _serverName;
@@ -43,15 +43,18 @@ namespace ChatServerConsole
             _server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             _server.Bind(new IPEndPoint(_ipAdress, _port));
             _server.Listen(3);
-            _server.BeginAccept(new AsyncCallback(AcceptConnection), null);
+            _server.BeginAccept(_server.ReceiveBufferSize,new AsyncCallback(AcceptConnection), null);
             Console.WriteLine("Serwer nasłuchuje...");
         }
 
         private static void AcceptConnection(IAsyncResult asyncCallback)
         {
-            Socket socket = _server.EndAccept(asyncCallback);
-            _clientsList.Add(socket);
-            Console.WriteLine($"Klient połączony! , Adres : {socket.RemoteEndPoint}, połączonych łącznie [{_clientsList.Count }]");
+            byte[] buffer = new byte[_server.ReceiveBufferSize];
+            Socket socket = _server.EndAccept(out buffer, asyncCallback);
+            string userName = Encoding.UTF8.GetString(buffer);
+
+            _clientsList.Add(socket, userName);
+            Console.WriteLine($"Klient połączony! Nick: {userName} , Adres: {socket.RemoteEndPoint}, połączonych łącznie [{_clientsList.Count }]");
 
             byte[] message = Encoding.UTF8.GetBytes($"Jesteś połączony z serwerem '{_serverName}'");
             socket.BeginSend(message, 0, message.Length, SocketFlags.None, new AsyncCallback(SendCallback), socket);
@@ -84,17 +87,14 @@ namespace ChatServerConsole
                     return;
                 }
 
-                //Zmiana nicku
-                if(message.Length > 6 && message.Substring(0, 6) == "#NICK#")
-                {
+                Console.WriteLine($"Otrzymana wiadomość od {_clientsList[socket]} : {message}");
 
-                }
-
-                Console.WriteLine($"Otrzymana wiadomość: {message}");
+                message = DateTime.Now.ToShortTimeString() + " " + _clientsList[socket] + ": " + message;
+                dataBuf = Encoding.UTF8.GetBytes(message);
 
                 foreach (var item in _clientsList)
                 {
-                    item.Send(dataBuf);
+                    item.Key.BeginSend(dataBuf, 0, dataBuf.Length, SocketFlags.None, new AsyncCallback(SendCallback), socket);
                 }
                 socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(ReciveCallback), socket);
             }
@@ -106,8 +106,8 @@ namespace ChatServerConsole
 
         private static void DisconnectClient(Socket socket)
         {
+            Console.WriteLine($"Klient {_clientsList[socket]} rozłączony, pozostało połączonych [{_clientsList.Count - 1 }]");
             _clientsList.Remove(socket);
-            Console.WriteLine($"Klient rozłączony, Adres : {socket.RemoteEndPoint}, pozostało połączonych [{_clientsList.Count }]");
             socket.Shutdown(SocketShutdown.Both);
             socket.Close();
             socket.Dispose();

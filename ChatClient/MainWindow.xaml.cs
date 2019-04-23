@@ -61,7 +61,6 @@ namespace ChatClient
         {
             try
             {
-                string pattern = "#NICK#";
                 string nick="";
                 byte[] nickBytes = new byte[100];
 
@@ -69,7 +68,7 @@ namespace ChatClient
                 {
                     nick = textBoxNick.Text;
                 }));
-                nickBytes = Encoding.UTF8.GetBytes(pattern + nick);
+                nickBytes = Encoding.UTF8.GetBytes(nick);
                 client.BeginSend(nickBytes, 0, nickBytes.Length, SocketFlags.None, new AsyncCallback(SendCallback), client);
 
                 Socket socket = asyncResult.AsyncState as Socket;
@@ -117,7 +116,7 @@ namespace ChatClient
             (sender as Button).IsEnabled = false;
             buttonConnect.IsEnabled = true;
 
-            listBoxOutput.Items.Add("Odłączono z serwera");
+           // listBoxOutput.Items.Add("Odłączono z serwera");
         }
 
         private void buttonSend_Click(object sender, RoutedEventArgs e)
