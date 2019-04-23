@@ -20,24 +20,26 @@
 
         </ListBox>
 
-        <Button x:Name="buttonConnect"  VerticalAlignment="Top" Grid.Row="2" Grid.Column="1"  Click="buttonConnect_Click">
+        <Button x:Name="buttonConnect"  VerticalAlignment="Top" Grid.Row="1" Grid.Column="1"  Click="buttonConnect_Click" Margin="0,11,0,0">
             Connect
         </Button>
-        <Button x:Name="buttonDisconnect" IsEnabled="False" VerticalAlignment="Bottom" Grid.Row="2" Grid.Column="1" Click="buttonDisconnect_Click">
+        <Button x:Name="buttonDisconnect" IsEnabled="False" VerticalAlignment="Bottom" Grid.Row="1" Grid.Column="1" Click="buttonDisconnect_Click" Margin="0,0,0,10">
             Disconnect
         </Button>
 
-        <Label Content="Address" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Row="2"/>
-        <TextBox x:Name="textBoxIpAddress" Grid.Row="2" Margin="10,26,17,57" >
+        <Label Content="Address" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Row="1" Margin="0,11,0,0"/>
+        <TextBox x:Name="textBoxIpAddress" Grid.Row="1" Margin="10,37,17,13" >
             127.0.0.1
         </TextBox>
 
-        <Label Content="Port" HorizontalAlignment="Left" VerticalAlignment="Bottom" Grid.Row="2" Margin="0,0,0,31"/>
-        <TextBox x:Name="textBoxPort" Grid.Row="2" Margin="10,67,17,15" >
+        <Label Content="Port" HorizontalAlignment="Left" VerticalAlignment="Bottom" Grid.Row="1" Margin="0,0,0,88" Grid.RowSpan="2"/>
+        <TextBox x:Name="textBoxPort" Grid.Row="2" Margin="10,10,17,72" >
             3000
         </TextBox>
-        <Button x:Name="buttonSend"  VerticalAlignment="Top" Grid.Row="1" Grid.Column="1"  Content="Send" Margin="0,25,0,0" Click="buttonSend_Click"/>
-        <TextBox x:Name="textBoxInput" Grid.Row="1" Margin="10,11,17,5" Text="" />
+        <Button x:Name="buttonSend"  VerticalAlignment="Top" Grid.Row="2" Grid.Column="1"  Content="Send" Margin="0,81,0,0" Click="buttonSend_Click"/>
+        <TextBox x:Name="textBoxInput" Grid.Row="2" Margin="10,10,10,31" Text="" Grid.Column="1" />
+        <Label Content="Nick" HorizontalAlignment="Left" VerticalAlignment="Bottom" Grid.Row="2" Margin="0,0,0,46"/>
+        <TextBox x:Name="textBoxNick" Grid.Row="2" Margin="10,56,17,26" Text="User1" />
 
     </Grid>
 </Window>

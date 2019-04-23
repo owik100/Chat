@@ -23,23 +23,19 @@ namespace ChatClient
     /// </summary>
     public partial class MainWindow : Window
     {
-        TcpClient client;
+        Socket client;
         static byte[] _buffer = new byte[512];
 
         public MainWindow()
         {
             InitializeComponent();
-
-           
         }
 
         private void buttonConnect_Click(object sender, RoutedEventArgs e)
-        {
-
-          
+        {        
             try
             {
-                client = new TcpClient();
+                client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
                 (sender as Button).IsEnabled = false;
                 buttonDisconnect.IsEnabled = true;
@@ -47,83 +43,107 @@ namespace ChatClient
 
                 IPAddress ipAdress = IPAddress.Parse(textBoxIpAddress.Text);
                 int port = Convert.ToInt32(textBoxPort.Text);
-                client.Connect(ipAdress, port);
 
-                //BinaryReader reader = new BinaryReader(client.GetStream());
-                //string x = reader.ReadString();
+                client.BeginConnect(ipAdress, port, new AsyncCallback(ConnectCallback), client);
 
-                if(client.Connected)
-
-                listBoxOutput.Items.Add("Connected");
-
-                byte[] receivedBuf = new byte[512];
-                int rec = client.Client.Receive(receivedBuf);
-                byte[] data = new byte[rec];
-                Array.Copy(receivedBuf, data, rec);
-
-                listBoxOutput.Items.Add(Encoding.UTF8.GetString(data));
-
-                client.Client.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(Odbierz),client);
-
+                client.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(ReciveCallback), client);
             }
             catch (Exception ex)
             {
-
+                (sender as Button).IsEnabled = true;
+                buttonDisconnect.IsEnabled = false;
                 MessageBox.Show(ex.ToString());
             }
 
         }
 
-        void Odbierz(IAsyncResult asyncResult)
+        private void ConnectCallback(IAsyncResult asyncResult)
         {
-            //Socket socket = asyncResult.AsyncState as Socket;
-            //int recived = socket.EndReceive(asyncResult);
-            //byte[] dataBuf = new byte[recived];
-            //Array.Copy(_buffer, dataBuf, recived);
-
-            //string text = Encoding.UTF8.GetString(dataBuf);
-
-            TcpClient client = asyncResult.AsyncState as TcpClient;
-            int recived = client.Client .EndReceive(asyncResult);
-            byte[] dataBuf = new byte[recived];
-            Array.Copy(_buffer, dataBuf, recived);
-
-            string text = Encoding.UTF8.GetString(dataBuf);
-
-            this.Dispatcher.Invoke((Action)(() =>
+            try
             {
-                listBoxOutput.Items.Add(text);
-            }));
-            client.Client.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(Odbierz), client);
+                string pattern = "#NICK#";
+                string nick="";
+                byte[] nickBytes = new byte[100];
+
+                this.Dispatcher.Invoke((Action)(() =>
+                {
+                    nick = textBoxNick.Text;
+                }));
+                nickBytes = Encoding.UTF8.GetBytes(pattern + nick);
+                client.BeginSend(nickBytes, 0, nickBytes.Length, SocketFlags.None, new AsyncCallback(SendCallback), client);
+
+                Socket socket = asyncResult.AsyncState as Socket;
+                socket.EndConnect(asyncResult);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+            
+        }
+
+        void ReciveCallback(IAsyncResult asyncResult)
+        {
+            Socket socket = asyncResult.AsyncState as Socket;
+            try
+            {
+                int recived = client.EndReceive(asyncResult);
+                byte[] dataBuf = new byte[recived];
+                Array.Copy(_buffer, dataBuf, recived);
+
+                string message = Encoding.UTF8.GetString(dataBuf);
+
+                this.Dispatcher.Invoke((Action)(() =>
+                {
+                    listBoxOutput.Items.Add(message);
+                }));
+
+                client.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(ReciveCallback), client);
+            }
+            catch(Exception ex)
+            {
+                //MessageBox.Show(ex.ToString());
+            }     
         }
 
         private void buttonDisconnect_Click(object sender, RoutedEventArgs e)
         {
             if (client != null)
             {
+                client.Shutdown(SocketShutdown.Both);
                 client.Close();
             }
 
             (sender as Button).IsEnabled = false;
             buttonConnect.IsEnabled = true;
 
-            listBoxOutput.Items.Add("Serwer wyłączony");
+            listBoxOutput.Items.Add("Odłączono z serwera");
         }
 
         private void buttonSend_Click(object sender, RoutedEventArgs e)
         {
             string message = textBoxInput.Text;
 
+            if(string.IsNullOrEmpty(message))
+            {
+                return;
+            }
+
             try
             {
                 byte[] buffer = Encoding.UTF8.GetBytes(message);
-                client.Client.Send(buffer);
+                client.BeginSend(buffer, 0, buffer.Length, SocketFlags.None, new AsyncCallback(SendCallback), client);
             }
             catch (Exception ex)
             {
 
                 MessageBox.Show(ex.ToString());
             }
+        }
+        private void SendCallback(IAsyncResult asyncResult)
+        {
+            Socket socket = asyncResult.AsyncState as Socket;
+            socket.EndSend(asyncResult);
         }
     }
 }

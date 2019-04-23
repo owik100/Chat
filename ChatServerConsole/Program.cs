@@ -51,9 +51,9 @@ namespace ChatServerConsole
         {
             Socket socket = _server.EndAccept(asyncCallback);
             _clientsList.Add(socket);
-            Console.WriteLine($"[{_clientsList.Count }] Klient połączony! , Adres : {socket.RemoteEndPoint} ");
+            Console.WriteLine($"Klient połączony! , Adres : {socket.RemoteEndPoint}, połączonych łącznie [{_clientsList.Count }]");
 
-            byte[] message = Encoding.UTF8.GetBytes($"Jesteś połączony z serwerem {_serverName}");
+            byte[] message = Encoding.UTF8.GetBytes($"Jesteś połączony z serwerem '{_serverName}'");
             socket.BeginSend(message, 0, message.Length, SocketFlags.None, new AsyncCallback(SendCallback), socket);
 
             socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(ReciveCallback), socket);
@@ -75,8 +75,22 @@ namespace ChatServerConsole
                 byte[] dataBuf = new byte[recived];
                 Array.Copy(_buffer, dataBuf, recived);
 
-                string text = Encoding.UTF8.GetString(dataBuf);
-                Console.WriteLine($"Otrzymana wiadomość: {text}");
+                string message = Encoding.UTF8.GetString(dataBuf);
+
+                //Rozłączenie
+                if(message == "")
+                {
+                    DisconnectClient(socket);
+                    return;
+                }
+
+                //Zmiana nicku
+                if(message.Length > 6 && message.Substring(0, 6) == "#NICK#")
+                {
+
+                }
+
+                Console.WriteLine($"Otrzymana wiadomość: {message}");
 
                 foreach (var item in _clientsList)
                 {
@@ -85,13 +99,18 @@ namespace ChatServerConsole
                 socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(ReciveCallback), socket);
             }
             catch (Exception ex)
-            {
-                _clientsList.Remove(socket);
-                Console.WriteLine($"Klient rozłączony - {socket.RemoteEndPoint}");
-                socket.Close();
-                socket.Dispose();
+            {             
+                DisconnectClient(socket);
             }
+        }
 
+        private static void DisconnectClient(Socket socket)
+        {
+            _clientsList.Remove(socket);
+            Console.WriteLine($"Klient rozłączony, Adres : {socket.RemoteEndPoint}, pozostało połączonych [{_clientsList.Count }]");
+            socket.Shutdown(SocketShutdown.Both);
+            socket.Close();
+            socket.Dispose();
         }
     }
 }
