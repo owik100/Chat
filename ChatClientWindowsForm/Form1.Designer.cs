@@ -40,16 +40,20 @@
             this.buttonDisconnect = new System.Windows.Forms.Button();
             this.textBoxInput = new System.Windows.Forms.TextBox();
             this.buttonSend = new System.Windows.Forms.Button();
+            this.label4 = new System.Windows.Forms.Label();
+            this.buttonClearInput = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownPort)).BeginInit();
             this.SuspendLayout();
             // 
             // listBoxOutput
             // 
+            this.listBoxOutput.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.listBoxOutput.FormattingEnabled = true;
+            this.listBoxOutput.ItemHeight = 20;
             this.listBoxOutput.Location = new System.Drawing.Point(12, 12);
             this.listBoxOutput.Name = "listBoxOutput";
-            this.listBoxOutput.Size = new System.Drawing.Size(776, 290);
+            this.listBoxOutput.Size = new System.Drawing.Size(776, 284);
             this.listBoxOutput.TabIndex = 0;
             // 
             // groupBox1
@@ -152,28 +156,50 @@
             // 
             // textBoxInput
             // 
-            this.textBoxInput.Location = new System.Drawing.Point(348, 313);
-            this.textBoxInput.Multiline = true;
+            this.textBoxInput.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.textBoxInput.Location = new System.Drawing.Point(348, 334);
             this.textBoxInput.Name = "textBoxInput";
-            this.textBoxInput.Size = new System.Drawing.Size(440, 66);
+            this.textBoxInput.Size = new System.Drawing.Size(440, 26);
             this.textBoxInput.TabIndex = 4;
+            this.textBoxInput.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBoxInput_KeyDown);
             // 
             // buttonSend
             // 
             this.buttonSend.Enabled = false;
-            this.buttonSend.Location = new System.Drawing.Point(348, 385);
+            this.buttonSend.Location = new System.Drawing.Point(348, 369);
             this.buttonSend.Name = "buttonSend";
-            this.buttonSend.Size = new System.Drawing.Size(440, 23);
+            this.buttonSend.Size = new System.Drawing.Size(349, 39);
             this.buttonSend.TabIndex = 5;
             this.buttonSend.Text = "Wyślij";
             this.buttonSend.UseVisualStyleBackColor = true;
             this.buttonSend.Click += new System.EventHandler(this.buttonSend_Click);
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(530, 318);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(63, 13);
+            this.label4.TabIndex = 6;
+            this.label4.Text = "Wiadomość";
+            // 
+            // buttonClearInput
+            // 
+            this.buttonClearInput.Location = new System.Drawing.Point(703, 369);
+            this.buttonClearInput.Name = "buttonClearInput";
+            this.buttonClearInput.Size = new System.Drawing.Size(85, 39);
+            this.buttonClearInput.TabIndex = 7;
+            this.buttonClearInput.Text = "Wyczyść czat";
+            this.buttonClearInput.UseVisualStyleBackColor = true;
+            this.buttonClearInput.Click += new System.EventHandler(this.buttonClearInput_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 421);
+            this.Controls.Add(this.buttonClearInput);
+            this.Controls.Add(this.label4);
             this.Controls.Add(this.buttonSend);
             this.Controls.Add(this.textBoxInput);
             this.Controls.Add(this.groupBox1);
@@ -202,6 +228,8 @@
         private System.Windows.Forms.Button buttonDisconnect;
         private System.Windows.Forms.TextBox textBoxInput;
         private System.Windows.Forms.Button buttonSend;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Button buttonClearInput;
     }
 }
 

@@ -31,9 +31,10 @@ namespace ChatClientWindowsForm
                 client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
                 (sender as Button).Enabled = false;
-                buttonDisconnect.Enabled = true;
-                buttonSend.Enabled = true;
+               
                 listBoxOutput.Items.Clear();
+
+                RefreshControlls(true);
 
                 IPAddress ipAdress = IPAddress.Parse(textBoxIpAddress.Text);
                 int port = Convert.ToInt32(numericUpDownPort.Text);
@@ -44,9 +45,7 @@ namespace ChatClientWindowsForm
             }
             catch (Exception ex)
             {
-                (sender as Button).Enabled = true;
-                buttonDisconnect.Enabled = false;
-                buttonSend.Enabled = false;
+                RefreshControlls(false);
                 MessageBox.Show(ex.Message);
             }
         }
@@ -85,8 +84,8 @@ namespace ChatClientWindowsForm
 
                 string message = Encoding.UTF8.GetString(dataBuf);
 
-
-                Invoke(new SetLogDelegate(SetLogText), message);
+                if(message.Length>0)
+                    Invoke(new SetLogDelegate(SetLogText), message);
 
 
                 client.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(ReciveCallback), client);
@@ -111,8 +110,7 @@ namespace ChatClientWindowsForm
                 client.Close();
             }
 
-            (sender as Button).Enabled = false;
-            buttonConnect.Enabled = true;
+            RefreshControlls(false);
 
             Invoke(new SetLogDelegate(SetLogText), "Odłączono z serwera");
         }
@@ -125,6 +123,7 @@ namespace ChatClientWindowsForm
         private void buttonSend_Click(object sender, EventArgs e)
         {
             string message = textBoxInput.Text;
+            textBoxInput.Text = "";
 
             if (string.IsNullOrEmpty(message))
             {
@@ -145,7 +144,38 @@ namespace ChatClientWindowsForm
 
         private void RefreshControlls(bool connected)
         {
+            if(connected)
+            {
+                textBoxIpAddress.Enabled = false;
+                numericUpDownPort.Enabled = false;
+                textBoxNickName.Enabled = false;
+                buttonConnect.Enabled = false;
+                buttonDisconnect.Enabled = true;
+                buttonSend.Enabled = true;
+            }
+            else
+            {
+                textBoxIpAddress.Enabled = true;
+                numericUpDownPort.Enabled = true;
+                textBoxNickName.Enabled = false;
+                buttonConnect.Enabled = true;
+                buttonDisconnect.Enabled = false;
+                buttonSend.Enabled = false;
+            }
+        }
 
+        private void buttonClearInput_Click(object sender, EventArgs e)
+        {
+            listBoxOutput.Items.Clear();
+        }
+
+        private void textBoxInput_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                buttonSend_Click(sender, e);
+                e.SuppressKeyPress = true;
+            }
         }
     }
 }
