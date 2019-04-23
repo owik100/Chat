@@ -197,13 +197,14 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 421);
+            this.ClientSize = new System.Drawing.Size(799, 421);
             this.Controls.Add(this.buttonClearInput);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.buttonSend);
             this.Controls.Add(this.textBoxInput);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.listBoxOutput);
+            this.MinimumSize = new System.Drawing.Size(815, 460);
             this.Name = "Form1";
             this.Text = "Chat";
             this.groupBox1.ResumeLayout(false);
