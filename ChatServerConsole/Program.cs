@@ -54,7 +54,7 @@ namespace ChatServerConsole
             Socket socket = _server.EndAccept(out buffer, asyncCallback);
             string userName = Encoding.UTF8.GetString(buffer);
 
-            Console.WriteLine($"Klient połączony! Nick: {userName} , Adres: {socket.RemoteEndPoint}, połączonych łącznie [{_clientsList.Count }]");
+            Console.WriteLine($"Klient połączony! Nick: {userName} , Adres: {socket.RemoteEndPoint}, połączonych łącznie [{_clientsList.Count + 1 }]");
 
             //Wysłanie inormacji o dołączeniu do wszystkich userów
             byte[] messageToAll = Encoding.UTF8.GetBytes($"{userName} połączony!");
