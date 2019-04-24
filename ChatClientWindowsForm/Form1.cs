@@ -46,7 +46,7 @@ namespace ChatClientWindowsForm
             catch (Exception ex)
             {
                 RefreshControlls(false);
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.Message, ex.GetType().Name, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -68,7 +68,7 @@ namespace ChatClientWindowsForm
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.Message, ex.GetType().Name, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
         }
@@ -138,7 +138,7 @@ namespace ChatClientWindowsForm
             catch (Exception ex)
             {
 
-                MessageBox.Show(ex.ToString());
+                MessageBox.Show(ex.Message, ex.GetType().Name, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
